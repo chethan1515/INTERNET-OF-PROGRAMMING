@@ -1,132 +1,89 @@
 <?php
+// Initialize the session
 session_start();
-error_reporting(0);
-include('includes/dbconnection.php');
-error_reporting(0);
+ 
+// Include config file
+require_once "connect.php";
+ 
+// Define variables and initialize with empty values
+$new_password = $confirm_password = "";
+$new_password_err = $confirm_password_err = "";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+ 
+    // Validate new password
+    if(empty(trim($_POST["new_password"]))){
+        $new_password_err = "Please enter the new password.";     
+    } elseif(strlen(trim($_POST["new_password"])) < 6){
+        $new_password_err = "Password must have atleast 6 characters.";
+    } else{
+        $new_password = trim($_POST["new_password"]);
+    }
+    
+    // Validate confirm password
+    if(empty(trim($_POST["confirm_password"]))){
+        $confirm_password_err = "Please confirm the password.";
+    } else{
+        $confirm_password = trim($_POST["confirm_password"]);
+        if(empty($new_password_err) && ($new_password != $confirm_password)){
+            $confirm_password_err = "Password did not match.";
+        }
+    }
+        
+    // Check input errors before updating the database
+    if(empty($new_password_err) && empty($confirm_password_err)){
+        // Prepare an update statement
+        $sql = "UPDATE users SET password = ? WHERE id = ?";
+        
+        if($stmt = $connection->prepare($sql)){
+            // Bind variables to the prepared statement as parameters
+            $stmt->bind_param("si", $param_password, $param_id);
+            
+            // Set parameters
+            $param_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $param_id = $_SESSION["id"];
+            
+            // Attempt to execute the prepared statement
+            if($stmt->execute()){
+                // Password updated successfully. Destroy the session, and redirect to login page
+                session_destroy();
+                header("location: login.php");
+                exit();
+            } else{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
 
-if(isset($_POST['submit']))
-  {
-    $contactno=$_SESSION['contactno'];
-    $email=$_SESSION['email'];
-    $password=md5($_POST['newpassword']);
-
-        $query=mysqli_query($con,"update tbladmin set Password='$password'  where  Email='$email' && MobileNumber='$contactno' ");
-   if($query)
-   {
-echo "<script>alert('Password successfully changed');</script>";
-session_destroy();
-   }
-  
-  }
-  ?>
-<!DOCTYPE HTML>
-<html>
-<head>
-<title>BPMS | Reset Page </title>
-
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
-<!-- Bootstrap Core CSS -->
-<link href="css/bootstrap.css" rel='stylesheet' type='text/css' />
-<!-- Custom CSS -->
-<link href="css/style.css" rel='stylesheet' type='text/css' />
-<!-- font CSS -->
-<!-- font-awesome icons -->
-<link href="css/font-awesome.css" rel="stylesheet"> 
-<!-- //font-awesome icons -->
- <!-- js-->
-<script src="js/jquery-1.11.1.min.js"></script>
-<script src="js/modernizr.custom.js"></script>
-<!--webfonts-->
-<link href='//fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic,700,700italic' rel='stylesheet' type='text/css'>
-<!--//webfonts--> 
-<!--animate-->
-<link href="css/animate.css" rel="stylesheet" type="text/css" media="all">
-<script src="js/wow.min.js"></script>
-	<script>
-		 new WOW().init();
-	</script>
-<!--//end-animate-->
-<!-- Metis Menu -->
-<script src="js/metisMenu.min.js"></script>
-<script src="js/custom.js"></script>
-<link href="css/custom.css" rel="stylesheet">
-<!--//Metis Menu -->
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
+            // Close statement
+            $stmt->close();
+        }
+    }
+    
+    // Close connection
+    $connection->close();
 }
-return true;
-} 
+?>
+<?php require('templates/header.php') ?>
 
-</script>
-</head> 
-<body class="cbp-spmenu-push">
-	<div class="main-content">
-		
-		<!-- main content start-->
-		<div style="background-color: #F1F1F1; height:800px;">
-			<div class="main-page login-page ">
-				<h3 class="title1">Reset Page</h3>
-				<div class="widget-shadow">
-					<div class="login-top">
-						<h4>Welcome back to BPMS AdminPanel ! </h4>
-					</div>
-					<div class="login-body">
-						<form role="form" method="post" action="" name="changepassword" onsubmit="return checkpass();">
-							<p style="font-size:16px; color:red" align="center"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>
-							<input type="password" name="newpassword" class="lock" placeholder="New Password" required="true">
-							
-							<input type="password" name="confirmpassword" class="lock" placeholder="Confirm Password" required="true">
-							
-							<input type="submit" name="submit" value="Reset">
-							<div class="forgot-grid">
-								
-								<div class="forgot">
-									<a href="index.php">Already have an account</a>
-								</div>
-								<div class="clearfix"> </div>
-							</div>
-						</form>
-					</div>
-				</div>
-				
-				
-			</div>
-		</div>
-		
-	</div>
-	<!-- Classie -->
-		<script src="js/classie.js"></script>
-		<script>
-			var menuLeft = document.getElementById( 'cbp-spmenu-s1' ),
-				showLeftPush = document.getElementById( 'showLeftPush' ),
-				body = document.body;
-				
-			showLeftPush.onclick = function() {
-				classie.toggle( this, 'active' );
-				classie.toggle( body, 'cbp-spmenu-push-toright' );
-				classie.toggle( menuLeft, 'cbp-spmenu-open' );
-				disableOther( 'showLeftPush' );
-			};
-			
-			function disableOther( button ) {
-				if( button !== 'showLeftPush' ) {
-					classie.toggle( showLeftPush, 'disabled' );
-				}
-			}
-		</script>
-	<!--scrolling js-->
-	<script src="js/jquery.nicescroll.js"></script>
-	<script src="js/scripts.js"></script>
-	<!--//scrolling js-->
-	<!-- Bootstrap Core JavaScript -->
-   <script src="js/bootstrap.js"> </script>
-</body>
-</html>
+    <div class="wrapper">
+        <h2>Reset Password</h2>
+        <p>Please fill out this form to reset your password.</p>
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post"> 
+            <div class="form-group <?php echo (!empty($new_password_err)) ? 'has-error' : ''; ?>">
+                <label>New Password</label>
+                <input type="password" name="new_password" class="form-control" value="<?php echo $new_password; ?>">
+                <span class="help-block"><?php echo $new_password_err; ?></span>
+            </div>
+            <div class="form-group <?php echo (!empty($confirm_password_err)) ? 'has-error' : ''; ?>">
+                <label>Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control">
+                <span class="help-block"><?php echo $confirm_password_err; ?></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Submit">
+                <a class="btn btn-link" href="welcome.php">Cancel</a>
+            </div>
+        </form>
+    </div>    
+
+<?php require('templates/footer.php') ?>

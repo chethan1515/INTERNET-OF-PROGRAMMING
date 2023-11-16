@@ -1,176 +1,115 @@
 <?php
+// Initialize the session
 session_start();
-error_reporting(0);
-include('includes/dbconnection.php');
-error_reporting(0);
-
-if(isset($_POST['login']))
-  {
-    $emailcon=$_POST['emailcont'];
-    $password=md5($_POST['password']);
-    $query=mysqli_query($con,"select ID from tbluser where  (Email='$emailcon' || MobileNumber='$emailcon') && Password='$password' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
-      $_SESSION['bpmsuid']=$ret['ID'];
-     header('location:index.php');
-    }
-    else{
-    echo "<script>alert('Invalid Details.');</script>";
-    }
-  }
-?>
-<!doctype html>
-<html lang="en">
-  <head>
  
-
-    <title>Beauty Parlour Management System | Login</title>
-
-    <!-- Template CSS -->
-    <link rel="stylesheet" href="assets/css/style-starter.css">
-    <link href="https://fonts.googleapis.com/css?family=Josefin+Slab:400,700,700i&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Poppins:400,700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
-  </head>
-  <body id="home">
-<?php include_once('includes/header.php');?>
-
-<script src="assets/js/jquery-3.3.1.min.js"></script> <!-- Common jquery plugin -->
-<!--bootstrap working-->
-<script src="assets/js/bootstrap.min.js"></script>
-<!-- //bootstrap working-->
-<!-- disable body scroll which navbar is in active -->
-<script>
-$(function () {
-  $('.navbar-toggler').click(function () {
-    $('body').toggleClass('noscroll');
-  })
-});
-</script>
-<!-- disable body scroll which navbar is in active -->
-
-<!-- breadcrumbs -->
-<section class="w3l-inner-banner-main">
-    <div class="about-inner contact ">
-        <div class="container">   
-            <div class="main-titles-head text-center">
-            <h3 class="header-name ">
+// Check if the user is already logged in, if yes then redirect him to welcome page
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+    header("location: index.php");
+    exit;
+}
+ 
+// Include config file
+require_once "connect.php";
+ 
+// Define variables and initialize with empty values
+$username = $password = "";
+$username_err = $password_err = "";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+ 
+    // Check if username is empty
+    if(empty(trim($_POST["username"]))){
+        $username_err = "Please enter username.";
+    } else{
+        $username = trim($_POST["username"]);
+    }
+    
+    // Check if password is empty
+    if(empty(trim($_POST["password"]))){
+        $password_err = "Please enter your password.";
+    } else{
+        $password = trim($_POST["password"]);
+    }
+    
+    // Validate credentials
+    if(empty($username_err) && empty($password_err)){
+        // Prepare a select statement
+        $sql = "SELECT id, username, password, role FROM users WHERE username = ?";
+        
+        if($stmt = $connection->prepare($sql)){
+            // Bind variables to the prepared statement as parameters
+            $stmt->bind_param("s", $param_username);
+            
+            // Set parameters
+            $param_username = $username;
+            
+            // Attempt to execute the prepared statement
+            if($stmt->execute()){
+                // Store result
+                $stmt->store_result();
                 
- Login Page
-            </h3>
-        </div>
-</div>
-</div>
-<div class="breadcrumbs-sub">
-<div class="container">   
-<ul class="breadcrumbs-custom-path">
-    <li class="right-side propClone"><a href="index.php" class="">Home <span class="fa fa-angle-right" aria-hidden="true"></span></a> <p></li>
-    <li class="active ">
-        Login</li>
-</ul>
-</div>
-</div>
-    </div>
-</section>
-<!-- breadcrumbs //-->
-<section class="w3l-contact-info-main" id="contact">
-    <div class="contact-sec	">
-        <div class="container">
+                // Check if username exists, if yes then verify password
+                if($stmt->num_rows == 1){                    
+                    // Bind result variables
+                    $stmt->bind_result($id, $username, $hashed_password, $role);
+                    if($stmt->fetch()){
+                        if(password_verify($password, $hashed_password)){
+                            // Password is correct, so start a new session
+                            session_start();
+                            
+                            // Store data in session variables
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                            $_SESSION["username"] = $username;     
+                            $_SESSION["role"] = $role;                       
+                            
+                            // Redirect user to welcome page
+                            header("location: index.php");
+                        } else{
+                            // Display an error message if password is not valid
+                            $password_err = "The password you entered was not valid.";
+                        }
+                    }
+                } else{
+                    // Display an error message if username doesn't exist
+                    $username_err = "No account found with that username.";
+                }
+            } else{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
 
-            <div class="d-grid contact-view">
-                <div class="cont-details">
-                    <?php
-
-$ret=mysqli_query($con,"select * from tblpage where PageType='contactus' ");
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-
+            // Close statement
+            $stmt->close();
+        }
+    }
+    
+    // Close connection
+    $connection->close();
+}
 ?>
-                    <div class="cont-top">
-                        <div class="cont-left text-center">
-                            <span class="fa fa-phone text-primary"></span>
-                        </div>
-                        <div class="cont-right">
-                            <h6>Call Us</h6>
-                            <p class="para"><a href="tel:+44 99 555 42">+<?php  echo $row['MobileNumber'];?></a></p>
-                        </div>
-                    </div>
-                    <div class="cont-top margin-up">
-                        <div class="cont-left text-center">
-                            <span class="fa fa-envelope-o text-primary"></span>
-                        </div>
-                        <div class="cont-right">
-                            <h6>Email Us</h6>
-                            <p class="para"><a href="mailto:example@mail.com" class="mail"><?php  echo $row['Email'];?></a></p>
-                        </div>
-                    </div>
-                    <div class="cont-top margin-up">
-                        <div class="cont-left text-center">
-                            <span class="fa fa-map-marker text-primary"></span>
-                        </div>
-                        <div class="cont-right">
-                            <h6>Address</h6>
-                            <p class="para"> <?php  echo $row['PageDescription'];?></p>
-                        </div>
-                    </div>
-                    <div class="cont-top margin-up">
-                        <div class="cont-left text-center">
-                            <span class="fa fa-map-marker text-primary"></span>
-                        </div>
-                        <div class="cont-right">
-                            <h6>Time</h6>
-                            <p class="para"> <?php  echo $row['Timing'];?></p>
-                        </div>
-                    </div>
-               <?php } ?> </div>
-                <div class="map-content-9 mt-lg-0 mt-4">
-                    <form method="post">
-                        <div>
-                            <input type="text" class="form-control" name="emailcont" required="true" placeholder="Registered Email or Contact Number" required="true">
-                           
-                        </div>
-                        <div style="padding-top: 30px;">
-                          <input type="password" class="form-control" name="password" placeholder="Password" required="true">
-                        
-                        </div>
-                        
-                        <div class="twice-two" style="padding-top: 30px;">
-                          <a class="link--gray" style="color: blue;" href="forgot-password.php">Forgot Password?</a>
-                        
-                        </div>
-                        <button type="submit" class="btn btn-contact" name="login">Login</button>
-                    </form>
-                </div>
-    </div>
-   
-    </div></div>
-</section>
-<?php include_once('includes/footer.php');?>
-<!-- move top -->
-<button onclick="topFunction()" id="movetop" title="Go to top">
-	<span class="fa fa-long-arrow-up"></span>
-</button>
-<script>
-	// When the user scrolls down 20px from the top of the document, show the button
-	window.onscroll = function () {
-		scrollFunction()
-	};
+<?php require('templates/header.php') ?>
 
-	function scrollFunction() {
-		if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-			document.getElementById("movetop").style.display = "block";
-		} else {
-			document.getElementById("movetop").style.display = "none";
-		}
-	}
+    <div class="wrapper mx-auto">
+        <h2>Login</h2>
+        <p>Please fill in your credentials to login.</p>
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+                <span class="help-block"><?php echo $username_err; ?></span>
+            </div>    
+            <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control">
+                <span class="help-block"><?php echo $password_err; ?></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Login">
+            </div>
+            <p>Don't have an account? <a href="register.php">Sign up now</a>.</p>
+            <p>Forgot Password? <a href="reset-password.php">Reset Password</a>.</p>
+        </form>
+    </div>    
 
-	// When the user clicks on the button, scroll to the top of the document
-	function topFunction() {
-		document.body.scrollTop = 0;
-		document.documentElement.scrollTop = 0;
-	}
-</script>
-<!-- /move top -->
-</body>
-
-</html>
+<?php require('templates/footer.php') ?>

@@ -1,70 +1,69 @@
-<section class=" w3l-header-4 header-sticky">
-    <header class="absolute-top">
-        <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <h1><a class="navbar-brand" href="index.php"> <!--<span class="fa fa-line-chart" aria-hidden="true"></span> -->
-            BPMS
-            </a></h1>
-            <button class="navbar-toggler bg-gradient collapsed" type="button" data-toggle="collapse"
-                data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="fa icon-expand fa-bars"></span>
-        <span class="fa icon-close fa-times"></span>
-            </button>
-      
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.php">About</a>
-                    </li> 
-                    <li class="nav-item">
-                        <a class="nav-link" href="services.php">Services</a>
-                    </li> 
+<?php 
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="contact.php">Contact</a>
-                    </li>
-                     
-                     <?php if (strlen($_SESSION['bpmsuid']==0)) {?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin/index.php">Admin</a>
-                    </li>
-                     <li class="nav-item">
-                        <a class="nav-link" href="signup.php">Signup</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.php">Login</a>
-                    </li><?php }?>
-                    <?php if (strlen($_SESSION['bpmsuid']>0)) {?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="book-appointment.php">Book Salon</a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="booking-history.php">Booking History</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="invoice-history.php">Invoice History</a>
-                    </li>
-                                        <li class="nav-item">
-                        <a class="nav-link" href="profile.php">Profile</a>
-                    </li>
-                                        <li class="nav-item">
-                        <a class="nav-link" href="change-password.php">Setting</a>
-                    </li>
-                     <li class="nav-item">
-                        <a class="nav-link" href="logout.php">Logout</a>
-                    </li>
-                  <?php }?>
-                </ul>
-                
-            </div>
-        </div>
+$server = 'http://' . $_SERVER['SERVER_NAME'] . '/ecom/';
 
-        </nav>
-    </div>
-      </header>
-</section>
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Online Clothing Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+    <link rel="stylesheet" href="<?php echo $server; ?>css/style.css" >
+ 
+<!-- Latest compiled and minified JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <style type="text/css">
+        body{ font: 14px sans-serif; }
+        .wrapper{ width: 350px; padding: 20px; }
+    </style>
+</head>
+<body>
+<header>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		<div class="navbar-collapse collapse justify-content-between">
+			<ul class="navbar-nav" id="navbar">
+				<li class="nav-item active">
+					<a class="nav-link" href="<?php echo $server; ?>index.php"><i class="fa fa-shopping-bag text-white"></i> Shop</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="<?php echo $server; ?>components/order/view.php">Orders</a>
+				</li>
+				<?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true && $_SESSION['role'] == 'admin') {
+					?>
+					<li class="nav-item">
+						<a class="nav-link" href="<?php echo $server; ?>components/product/view-product.php">Products</a>
+					</li>
+				<?php } ?>
+			</ul>
+			<ul class="navbar-nav">
+				<div class="d-flex my-2 my-lg-0">
+				    <input id="searchInput" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+				    <button id="searchBtn"class="btn btn-outline-light m-2 my-sm-0" type="button">Search</button>
+				</div>
+			</ul>
+			<ul class="navbar-nav">
+				<!-- <li class="nav-item mr-sm-2">
+					<a class="nav-link btn btn-dark text-white" href="<?php // echo $server; ?>cart.php">Cart</a>
+				</li> -->
+				<?php 
+				if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) { ?>
+					<li class="nav-item mr-sm-2">
+						<a class="nav-link btn btn-danger text-white" href="<?php echo $server; ?>logout.php"><span><i class="fa fa-sign-out text-white"></i></span>Sign Out</a>
+					</li>
+				<?php } else { ?>
+				    <li class="nav-item mr-sm-2">
+						<a class="nav-link btn btn-primary text-white" href="<?php echo $server; ?>logout.php"><span><i class="fa fa-sign-in text-white"></i></span> Sign In</a>
+					</li>
+				<?php } ?>
+			</ul>
+		</div>
+	</nav>
+</header>
+
+<div class="container-fluid">
