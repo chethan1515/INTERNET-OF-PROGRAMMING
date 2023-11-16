@@ -2,28 +2,22 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
+if (strlen($_SESSION['bpmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+if($_GET['delid']){
+$sid=$_GET['delid'];
+mysqli_query($con,"delete from tblservices where ID ='$sid'");
+echo "<script>alert('Data Deleted');</script>";
+echo "<script>window.location.href='manage-services.php'</script>";
+          }
 
-if(isset($_POST['submit']))
-  {
-    $contactno=$_POST['contactno'];
-    $email=$_POST['email'];
 
-        $query=mysqli_query($con,"select ID from tbladmin where  Email='$email' and MobileNumber='$contactno' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
-      $_SESSION['contactno']=$contactno;
-      $_SESSION['email']=$email;
-     header('location:reset-password.php');
-    }
-    else{
-      $msg="Invalid Details. Please try again.";
-    }
-  }
   ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS | Forgot Page </title>
+<title>BPMS || Manage Services</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -55,39 +49,44 @@ if(isset($_POST['submit']))
 </head> 
 <body class="cbp-spmenu-push">
 	<div class="main-content">
-		
+		<!--left-fixed -navigation-->
+		 <?php include_once('includes/sidebar.php');?>
+		<!--left-fixed -navigation-->
+		<!-- header-starts -->
+		 <?php include_once('includes/header.php');?>
+		<!-- //header-ends -->
 		<!-- main content start-->
-		<div style="background-color: #F1F1F1; height:800px;">			<div class="main-page login-page ">
-				<h3 class="title1">Forgot Page</h3>
-				<div class="widget-shadow">
-					<div class="login-top">
-						<h4>Welcome back to BPMS AdminPanel ! </h4>
-					</div>
-					<div class="login-body">
-						<form role="form" method="post" action="">
-							<p style="font-size:16px; color:red" align="center"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>
-							<input type="text" name="email" class="lock" placeholder="Email" required="true">
-							
-							<input type="text" name="contactno" class="lock" placeholder="Mobile Number" required="true" maxlength="10" pattern="[0-9]+">
-							
-							<input type="submit" name="submit" value="Reset">
-							<div class="forgot-grid">
-								
-								<div class="forgot">
-									<a href="index.php">Already have an account</a>
-								</div>
-								<div class="clearfix"> </div>
-							</div>
-						</form>
+		<div id="page-wrapper">
+			<div class="main-page">
+				<div class="tables">
+					<h3 class="title1">Manage Services</h3>
+					
+					
+				
+					<div class="table-responsive bs-example widget-shadow">
+						<h4>Update Services:</h4>
+						<table class="table table-bordered"> <thead> <tr> <th>#</th> <th>Service Name</th> <th>Service Price</th> <th>Creation Date</th><th>Action</th> </tr> </thead> <tbody>
+<?php
+$ret=mysqli_query($con,"select *from  tblservices");
+$cnt=1;
+while ($row=mysqli_fetch_array($ret)) {
+
+?>
+
+						 <tr> <th scope="row"><?php echo $cnt;?></th> <td><?php  echo $row['ServiceName'];?></td> <td><?php  echo $row['Cost'];?></td><td><?php  echo $row['CreationDate'];?></td> <td>
+						 	<a href="edit-services.php?editid=<?php echo $row['ID'];?>" class="btn btn-primary">Edit</a>
+						 	<a href="manage-services.php?delid=<?php echo $row['ID'];?>" class="btn btn-danger" onClick="return confirm('Are you sure you want to delete?')">Delete</a>
+
+						 	</td> </tr>   <?php 
+$cnt=$cnt+1;
+}?></tbody> </table> 
 					</div>
 				</div>
-				
-				
 			</div>
 		</div>
-		
+		<!--footer-->
+		 <?php include_once('includes/footer.php');?>
+        <!--//footer-->
 	</div>
 	<!-- Classie -->
 		<script src="js/classie.js"></script>
@@ -114,6 +113,7 @@ if(isset($_POST['submit']))
 	<script src="js/scripts.js"></script>
 	<!--//scrolling js-->
 	<!-- Bootstrap Core JavaScript -->
-   <script src="js/bootstrap.js"> </script>
+	<script src="js/bootstrap.js"> </script>
 </body>
 </html>
+<?php }  ?>

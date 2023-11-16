@@ -12,7 +12,7 @@ if (strlen($_SESSION['bpmsaid']==0)) {
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS || View Invoice</title>
+<title>BPMS || Customer List</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -53,81 +53,67 @@ if (strlen($_SESSION['bpmsaid']==0)) {
 		<!-- main content start-->
 		<div id="page-wrapper">
 			<div class="main-page">
-				<div class="tables" id="exampl">
-					<h3 class="title1">Invoice Details</h3>
+				<div class="tables">
+					<h3 class="title1">Search Invoice</h3>
 					
-	<?php
-	$invid=intval($_GET['invoiceid']);
-$ret=mysqli_query($con,"select DISTINCT  date(tblinvoice.PostingDate) as invoicedate,tbluser.FirstName,tbluser.LastName,tbluser.Email,tbluser.MobileNumber,tbluser.RegDate
-	from  tblinvoice 
-	join tbluser on tbluser.ID=tblinvoice.Userid 
-	where tblinvoice.BillingId='$invid'");
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-
-?>				
+					
 				
 					<div class="table-responsive bs-example widget-shadow">
-						<h4>Invoice #<?php echo $invid;?></h4>
-						<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="6">Customer Details</th>	
-</tr>
-							 <tr> 
-								<th>Name</th> 
-								<td><?php echo $row['FirstName']?> <?php echo $row['LastName']?></td> 
-								<th>Contact no.</th> 
-								<td><?php echo $row['MobileNumber']?></td>
-								<th>Email </th> 
-								<td><?php echo $row['Email']?></td>
-							</tr> 
-							 <tr> 
-								<th>Registration Date</th> 
-								<td><?php echo $row['RegDate']?></td> 
-								<th>Invoice Date</th> 
-								<td colspan="3"><?php echo $row['invoicedate']?></td> 
-							</tr> 
-<?php }?>
-</table> 
-<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="3">Services Details</th>	
-</tr>
-<tr>
-<th>#</th>	
-<th>Service</th>
-<th>Cost</th>
-</tr>
+						<h4>Search Invoice:</h4>
+						<div class="form-body">
+							<form method="post" name="search" action="">
+								<p style="font-size:16px; color:red" align="center"> <?php if($msg){
+    echo $msg;
+  }  ?> </p>
 
+  
+							 <div class="form-group"> <label for="exampleInputEmail1">Search by Invoice Number or Billing Number/Name/Mobile No</label> <input id="searchdata" type="text" name="searchdata" required="true" class="form-control">
+						
+							<br>
+							  <button type="submit" name="search" class="btn btn-primary btn-sm">Search</button> </form> 
+						</div>
+						<?php
+if(isset($_POST['search']))
+{ 
+
+$sdata=$_POST['searchdata'];
+  ?>
+  <h4 align="center">Result against "<?php echo $sdata;?>" keyword </h4> 
+						<table class="table table-bordered"> 
+							<thead> <tr> 
+								<th>#</th> 
+								<th>Invoice Id</th> 
+								<th>Customer Name</th> 
+								<th>Invoice Date</th> 
+								<th>Action</th>
+							</tr> 
+							</thead> <tbody>
 <?php
-$ret=mysqli_query($con,"select tblservices.ServiceName,tblservices.Cost  
-	from  tblinvoice 
-	join tblservices on tblservices.ID=tblinvoice.ServiceId 
-	where tblinvoice.BillingId='$invid'");
+$ret=mysqli_query($con,"select distinct  tbluser.FirstName,tblinvoice.BillingId,date(tblinvoice.PostingDate) as invoicedate from  tbluser   
+	join tblinvoice on tbluser.ID=tblinvoice.Userid  where tblinvoice.BillingId like '%$sdata%' || tbluser.MobileNumber like '%$sdata%' || tbluser.FirstName like '%$sdata%'");
+$num=mysqli_num_rows($ret);
+if($num>0){
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
-	?>
 
-<tr>
-<th><?php echo $cnt;?></th>
-<td><?php echo $row['ServiceName']?></td>	
-<td><?php echo $subtotal=$row['Cost']?></td>
-</tr>
-<?php 
+?>
+
+						 <tr> 
+						 	<th scope="row"><?php echo $cnt;?></th> 
+						 	<td><?php  echo $row['BillingId'];?></td>
+						 	<td><?php  echo $row['FirstName'];?></td>
+						 	<td><?php  echo $row['invoicedate'];?></td> 
+						 		<td><a href="view-invoice.php?invoiceid=<?php  echo $row['BillingId'];?>" class="btn btn-primary">View</a></td> 
+
+						  </tr>   <?php 
 $cnt=$cnt+1;
-$gtotal+=$subtotal;
-} ?>
+} } else { ?>
+  <tr>
+    <td colspan="8"> No record found against this search</td>
 
-<tr>
-<th colspan="2" style="text-align:center">Grand Total</th>
-<th><?php echo $gtotal?></th>	
-
-</tr>
-</table>
-  <p style="margin-top:1%"  align="center">
-  <i class="fa fa-print fa-2x" style="cursor: pointer;"  OnClick="CallPrint(this.value)" ></i>
-</p>
-
+  </tr>
+   
+<?php } }?></tbody> </table> 
 					</div>
 				</div>
 			</div>
@@ -162,17 +148,6 @@ $gtotal+=$subtotal;
 	<!--//scrolling js-->
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.js"> </script>
-	  <script>
-function CallPrint(strid) {
-var prtContent = document.getElementById("exampl");
-var WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-WinPrint.document.write(prtContent.innerHTML);
-WinPrint.document.close();
-WinPrint.focus();
-WinPrint.print();
-WinPrint.close();
-}
-</script>
 </body>
 </html>
 <?php }  ?>

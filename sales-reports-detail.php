@@ -12,7 +12,7 @@ if (strlen($_SESSION['bpmsaid']==0)) {
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS || View Invoice</title>
+<title>BPMS || Sales Reports</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -53,81 +53,103 @@ if (strlen($_SESSION['bpmsaid']==0)) {
 		<!-- main content start-->
 		<div id="page-wrapper">
 			<div class="main-page">
-				<div class="tables" id="exampl">
-					<h3 class="title1">Invoice Details</h3>
+				<div class="tables">
+					<h3 class="title1">Sales Reports</h3>
 					
-	<?php
-	$invid=intval($_GET['invoiceid']);
-$ret=mysqli_query($con,"select DISTINCT  date(tblinvoice.PostingDate) as invoicedate,tbluser.FirstName,tbluser.LastName,tbluser.Email,tbluser.MobileNumber,tbluser.RegDate
-	from  tblinvoice 
-	join tbluser on tbluser.ID=tblinvoice.Userid 
-	where tblinvoice.BillingId='$invid'");
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-
-?>				
+					
 				
 					<div class="table-responsive bs-example widget-shadow">
-						<h4>Invoice #<?php echo $invid;?></h4>
-						<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="6">Customer Details</th>	
-</tr>
-							 <tr> 
-								<th>Name</th> 
-								<td><?php echo $row['FirstName']?> <?php echo $row['LastName']?></td> 
-								<th>Contact no.</th> 
-								<td><?php echo $row['MobileNumber']?></td>
-								<th>Email </th> 
-								<td><?php echo $row['Email']?></td>
-							</tr> 
-							 <tr> 
-								<th>Registration Date</th> 
-								<td><?php echo $row['RegDate']?></td> 
-								<th>Invoice Date</th> 
-								<td colspan="3"><?php echo $row['invoicedate']?></td> 
-							</tr> 
-<?php }?>
-</table> 
-<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="3">Services Details</th>	
-</tr>
-<tr>
-<th>#</th>	
-<th>Service</th>
-<th>Cost</th>
-</tr>
+						
+ 				  <?php
+$fdate=$_POST['fromdate'];
+$tdate=$_POST['todate'];
+$rtype=$_POST['requesttype'];
+?>
+<?php if($rtype=='mtwise'){
+$month1=strtotime($fdate);
+$month2=strtotime($tdate);
+$m1=date("F",$month1);
+$m2=date("F",$month2);
+$y1=date("Y",$month1);
+$y2=date("Y",$month2);
+    ?>
+<h4 class="header-title m-t-0 m-b-30">Sales Report Month Wise</h4>
+<h4 align="center" style="color:blue">Sales Report  from <?php echo $m1."-".$y1;?> to <?php echo $m2."-".$y2;?></h4>
+<hr />
 
+						<table class="table table-bordered">  <thead>
+<tr>
+<th>S.NO</th>
+<th>Month / Year </th>
+<th>Sales</th>
+</tr>
+</thead>
 <?php
-$ret=mysqli_query($con,"select tblservices.ServiceName,tblservices.Cost  
-	from  tblinvoice 
-	join tblservices on tblservices.ID=tblinvoice.ServiceId 
-	where tblinvoice.BillingId='$invid'");
+$ret=mysqli_query($con,"select month(PostingDate) as lmonth,year(PostingDate) as lyear,sum(Cost) as totalprice from  tblinvoice join tblservices on tblservices.ID= tblinvoice.ServiceId where date(tblinvoice.PostingDate) between '$fdate' and '$tdate' group by lmonth,lyear");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
-	?>
 
+?>
+              
+                <tr>
+                    <td><?php echo $cnt;?></td>
+                  <td><?php  echo $row['lmonth']."/".$row['lyear'];?></td>
+              <td><?php  echo $total=$row['totalprice'];?></td>
+             
+                    </tr>
+                <?php
+$ftotal+=$total;
+$cnt++;
+}?>
 <tr>
-<th><?php echo $cnt;?></th>
-<td><?php echo $row['ServiceName']?></td>	
-<td><?php echo $subtotal=$row['Cost']?></td>
-</tr>
-<?php 
-$cnt=$cnt+1;
-$gtotal+=$subtotal;
-} ?>
-
+                  <td colspan="2" align="center">Total </td>
+              <td><?php  echo $ftotal;?></td>
+   
+                 
+                 
+                </tr></table> 
+                <?php } else {
+$year1=strtotime($fdate);
+$year2=strtotime($tdate);
+$y1=date("Y",$year1);
+$y2=date("Y",$year2);
+ ?>
+ <h4 class="header-title m-t-0 m-b-30">Sales Report Year Wise</h4>
+    <h4 align="center" style="color:blue">Sales Report  from <?php echo $y1;?> to <?php echo $y2;?></h4>
+    <hr />
+    <table class="table table-bordered">  <thead>
 <tr>
-<th colspan="2" style="text-align:center">Grand Total</th>
-<th><?php echo $gtotal?></th>	
-
+<th>S.NO</th>
+<th>Year </th>
+<th>Sales</th>
 </tr>
-</table>
-  <p style="margin-top:1%"  align="center">
-  <i class="fa fa-print fa-2x" style="cursor: pointer;"  OnClick="CallPrint(this.value)" ></i>
-</p>
+</thead>
+<?php
+$ret=mysqli_query($con,"select year(PostingDate) as lyear,sum(Cost) as totalprice from  tblinvoice join tblservices on tblservices.ID= tblinvoice.ServiceId where date(tblinvoice.PostingDate) between '$fdate' and '$tdate' group by lyear");
 
+$cnt=1;
+while ($row=mysqli_fetch_array($ret)) {
+
+?>
+              
+                <tr>
+                    <td><?php echo $cnt;?></td>
+                   <td><?php  echo $row['lyear'];?></td>
+              <td><?php  echo $total=$row['totalprice'];?></td>
+             
+                    </tr>
+                <?php
+$ftotal+=$total;
+$cnt++;
+}?>
+<tr>
+                  <td colspan="2" align="center">Total </td>
+              <td><?php  echo $ftotal;?></td>
+   
+                 
+                 
+                </tr></table>
+                <?php } ?>	
 					</div>
 				</div>
 			</div>
@@ -162,17 +184,6 @@ $gtotal+=$subtotal;
 	<!--//scrolling js-->
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.js"> </script>
-	  <script>
-function CallPrint(strid) {
-var prtContent = document.getElementById("exampl");
-var WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-WinPrint.document.write(prtContent.innerHTML);
-WinPrint.document.close();
-WinPrint.focus();
-WinPrint.print();
-WinPrint.close();
-}
-</script>
 </body>
 </html>
 <?php }  ?>

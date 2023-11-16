@@ -5,14 +5,26 @@ include('includes/dbconnection.php');
 if (strlen($_SESSION['bpmsaid']==0)) {
   header('location:logout.php');
   } else{
-
-
-
+    if(isset($_POST['submit']))
+  {
+    $adminid=$_SESSION['bpmsaid'];
+    $aname=$_POST['adminname'];
+  $mobno=$_POST['contactnumber'];
+  
+     $query=mysqli_query($con, "update tbladmin set AdminName ='$aname', MobileNumber='$mobno' where ID='$adminid'");
+    if ($query) {
+    $msg="Admin profile has been updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again.";
+    }
+  }
   ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS || View Invoice</title>
+<title>BPMS | Admin Profile</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -48,93 +60,42 @@ if (strlen($_SESSION['bpmsaid']==0)) {
 		 <?php include_once('includes/sidebar.php');?>
 		<!--left-fixed -navigation-->
 		<!-- header-starts -->
-		 <?php include_once('includes/header.php');?>
+	 <?php include_once('includes/header.php');?>
 		<!-- //header-ends -->
 		<!-- main content start-->
 		<div id="page-wrapper">
 			<div class="main-page">
-				<div class="tables" id="exampl">
-					<h3 class="title1">Invoice Details</h3>
-					
-	<?php
-	$invid=intval($_GET['invoiceid']);
-$ret=mysqli_query($con,"select DISTINCT  date(tblinvoice.PostingDate) as invoicedate,tbluser.FirstName,tbluser.LastName,tbluser.Email,tbluser.MobileNumber,tbluser.RegDate
-	from  tblinvoice 
-	join tbluser on tbluser.ID=tblinvoice.Userid 
-	where tblinvoice.BillingId='$invid'");
+				<div class="forms">
+					<h3 class="title1">Admin Profile</h3>
+					<div class="form-grids row widget-shadow" data-example-id="basic-forms"> 
+						<div class="form-title">
+							<h4>Update Profile :</h4>
+						</div>
+						<div class="form-body">
+							<form method="post">
+								<p style="font-size:16px; color:red" align="center"> <?php if($msg){
+    echo $msg;
+  }  ?> </p>
+
+  <?php
+$adminid=$_SESSION['bpmsaid'];
+$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
-?>				
-				
-					<div class="table-responsive bs-example widget-shadow">
-						<h4>Invoice #<?php echo $invid;?></h4>
-						<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="6">Customer Details</th>	
-</tr>
-							 <tr> 
-								<th>Name</th> 
-								<td><?php echo $row['FirstName']?> <?php echo $row['LastName']?></td> 
-								<th>Contact no.</th> 
-								<td><?php echo $row['MobileNumber']?></td>
-								<th>Email </th> 
-								<td><?php echo $row['Email']?></td>
-							</tr> 
-							 <tr> 
-								<th>Registration Date</th> 
-								<td><?php echo $row['RegDate']?></td> 
-								<th>Invoice Date</th> 
-								<td colspan="3"><?php echo $row['invoicedate']?></td> 
-							</tr> 
-<?php }?>
-</table> 
-<table class="table table-bordered" width="100%" border="1"> 
-<tr>
-<th colspan="3">Services Details</th>	
-</tr>
-<tr>
-<th>#</th>	
-<th>Service</th>
-<th>Cost</th>
-</tr>
-
-<?php
-$ret=mysqli_query($con,"select tblservices.ServiceName,tblservices.Cost  
-	from  tblinvoice 
-	join tblservices on tblservices.ID=tblinvoice.ServiceId 
-	where tblinvoice.BillingId='$invid'");
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-	?>
-
-<tr>
-<th><?php echo $cnt;?></th>
-<td><?php echo $row['ServiceName']?></td>	
-<td><?php echo $subtotal=$row['Cost']?></td>
-</tr>
-<?php 
-$cnt=$cnt+1;
-$gtotal+=$subtotal;
-} ?>
-
-<tr>
-<th colspan="2" style="text-align:center">Grand Total</th>
-<th><?php echo $gtotal?></th>	
-
-</tr>
-</table>
-  <p style="margin-top:1%"  align="center">
-  <i class="fa fa-print fa-2x" style="cursor: pointer;"  OnClick="CallPrint(this.value)" ></i>
-</p>
-
+?>
+							 <div class="form-group"> <label for="exampleInputEmail1">Admin Name</label> <input type="text" class="form-control" id="adminname" name="adminname" placeholder="Admin Name" value="<?php  echo $row['AdminName'];?>"> </div> <div class="form-group"> <label for="exampleInputPassword1">User Name</label> <input type="text" id="username" name="username" class="form-control" value="<?php  echo $row['UserName'];?>" readonly="true"> </div>
+							 <div class="form-group"> <label for="exampleInputPassword1">Contact Number</label> <input type="text" id="contactnumber" name="contactnumber" class="form-control" value="<?php  echo $row['MobileNumber'];?>"> </div>
+							 <div class="form-group"> <label for="exampleInputPassword1">Email address</label> <input type="email" id="email" name="email" class="form-control" value="<?php  echo $row['Email'];?>" readonly='true'> </div>  
+							  <button type="submit" name="submit" class="btn btn-default">Update</button> </form> 
+						</div>
+						<?php } ?>
 					</div>
-				</div>
+				
+				
 			</div>
 		</div>
-		<!--footer-->
 		 <?php include_once('includes/footer.php');?>
-        <!--//footer-->
 	</div>
 	<!-- Classie -->
 		<script src="js/classie.js"></script>
@@ -161,18 +122,7 @@ $gtotal+=$subtotal;
 	<script src="js/scripts.js"></script>
 	<!--//scrolling js-->
 	<!-- Bootstrap Core JavaScript -->
-	<script src="js/bootstrap.js"> </script>
-	  <script>
-function CallPrint(strid) {
-var prtContent = document.getElementById("exampl");
-var WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-WinPrint.document.write(prtContent.innerHTML);
-WinPrint.document.close();
-WinPrint.focus();
-WinPrint.print();
-WinPrint.close();
-}
-</script>
+   <script src="js/bootstrap.js"> </script>
 </body>
 </html>
-<?php }  ?>
+<?php } ?>

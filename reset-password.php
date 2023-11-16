@@ -2,28 +2,27 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
+error_reporting(0);
 
 if(isset($_POST['submit']))
   {
-    $contactno=$_POST['contactno'];
-    $email=$_POST['email'];
+    $contactno=$_SESSION['contactno'];
+    $email=$_SESSION['email'];
+    $password=md5($_POST['newpassword']);
 
-        $query=mysqli_query($con,"select ID from tbladmin where  Email='$email' and MobileNumber='$contactno' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
-      $_SESSION['contactno']=$contactno;
-      $_SESSION['email']=$email;
-     header('location:reset-password.php');
-    }
-    else{
-      $msg="Invalid Details. Please try again.";
-    }
+        $query=mysqli_query($con,"update tbladmin set Password='$password'  where  Email='$email' && MobileNumber='$contactno' ");
+   if($query)
+   {
+echo "<script>alert('Password successfully changed');</script>";
+session_destroy();
+   }
+  
   }
   ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS | Forgot Page </title>
+<title>BPMS | Reset Page </title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -52,25 +51,39 @@ if(isset($_POST['submit']))
 <script src="js/custom.js"></script>
 <link href="css/custom.css" rel="stylesheet">
 <!--//Metis Menu -->
+<script type="text/javascript">
+function checkpass()
+{
+if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
+{
+alert('New Password and Confirm Password field does not match');
+document.changepassword.confirmpassword.focus();
+return false;
+}
+return true;
+} 
+
+</script>
 </head> 
 <body class="cbp-spmenu-push">
 	<div class="main-content">
 		
 		<!-- main content start-->
-		<div style="background-color: #F1F1F1; height:800px;">			<div class="main-page login-page ">
-				<h3 class="title1">Forgot Page</h3>
+		<div style="background-color: #F1F1F1; height:800px;">
+			<div class="main-page login-page ">
+				<h3 class="title1">Reset Page</h3>
 				<div class="widget-shadow">
 					<div class="login-top">
 						<h4>Welcome back to BPMS AdminPanel ! </h4>
 					</div>
 					<div class="login-body">
-						<form role="form" method="post" action="">
+						<form role="form" method="post" action="" name="changepassword" onsubmit="return checkpass();">
 							<p style="font-size:16px; color:red" align="center"> <?php if($msg){
     echo $msg;
   }  ?> </p>
-							<input type="text" name="email" class="lock" placeholder="Email" required="true">
+							<input type="password" name="newpassword" class="lock" placeholder="New Password" required="true">
 							
-							<input type="text" name="contactno" class="lock" placeholder="Mobile Number" required="true" maxlength="10" pattern="[0-9]+">
+							<input type="password" name="confirmpassword" class="lock" placeholder="Confirm Password" required="true">
 							
 							<input type="submit" name="submit" value="Reset">
 							<div class="forgot-grid">

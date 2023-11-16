@@ -1,35 +1,36 @@
 <?php
 session_start();
-include('includes/dbconnection.php');
 error_reporting(0);
+include('includes/dbconnection.php');
 if (strlen($_SESSION['bpmsaid']==0)) {
   header('location:logout.php');
   } else{
+
 if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['bpmsaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
+  {
+  	$bpmsaid=$_SESSION['bpmsaid'];
+     $pagetitle=$_POST['pagetitle'];
+$pagedes=$_POST['pagedes'];
+$email=$_POST['email'];
+$mobnumber=$_POST['mobnumber'];
+$timing=$_POST['timing'];
+     
+    $query=mysqli_query($con,"update tblpage set PageTitle='$pagetitle',Email='$email',MobileNumber='$mobnumber',Timing='$timing',PageDescription='$pagedes' where  PageType='contactus'");
+    if ($query) {
+    $msg="Contact Us has been updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again";
+    }
 
   
-?>
+}
+  ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS | Change Password</title>
+<title>BPMS | Contact Us</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -57,20 +58,8 @@ $msg="Your current password is wrong";
 <script src="js/metisMenu.min.js"></script>
 <script src="js/custom.js"></script>
 <link href="css/custom.css" rel="stylesheet">
-<!--//Metis Menu -->
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-} 
-
-</script>
+<script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
+<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
 </head> 
 <body class="cbp-spmenu-push">
 	<div class="main-content">
@@ -84,30 +73,31 @@ return true;
 		<div id="page-wrapper">
 			<div class="main-page">
 				<div class="forms">
-					<h3 class="title1">Change Password</h3>
+					<h3 class="title1">Update Contact Us</h3>
 					<div class="form-grids row widget-shadow" data-example-id="basic-forms"> 
 						<div class="form-title">
-							<h4>Reset Your Password :</h4>
+							<h4>Update Contact Us:</h4>
 						</div>
 						<div class="form-body">
-							<form method="post" name="changepassword" onsubmit="return checkpass();" action="">
+							<form method="post">
 								<p style="font-size:16px; color:red" align="center"> <?php if($msg){
     echo $msg;
   }  ?> </p>
-
   <?php
-$adminid=$_SESSION['bpmsaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
+ 
+$ret=mysqli_query($con,"select * from  tblpage where PageType='contactus'");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
-							 <div class="form-group"> <label for="exampleInputEmail1">Current Password</label> <input type="password" name="currentpassword" class="form-control" required= "true" value=""> </div> <div class="form-group"> <label for="exampleInputPassword1">New Password</label> <input type="password" name="newpassword" class="form-control" value="" required="true"> </div>
-							 <div class="form-group"> <label for="exampleInputPassword1">Confirm Password</label> <input type="password" name="confirmpassword" class="form-control" value="" required="true"> </div>
-							  
-							  <button type="submit" name="submit" class="btn btn-default">Change</button> </form> 
+
+  
+							 <div class="form-group"> <label for="exampleInputEmail1">Page Title</label> <input type="text" class="form-control" name="pagetitle" id="pagetitle" value="<?php  echo $row['PageTitle'];?>" required="true"> </div><div class="form-group"> <label for="exampleInputEmail1">Email</label> <input type="text" class="form-control" name="email" id="email" value="<?php  echo $row['Email'];?>" required="true"> </div><div class="form-group"> <label for="exampleInputEmail1">Mobile Number</label> <input type="text" class="form-control" name="mobnumber" id="mobnumber" value="<?php  echo $row['MobileNumber'];?>" required="true"> </div><div class="form-group"> <label for="exampleInputEmail1">Timing</label> <input type="text" class="form-control" name="timing" id="timing" value="<?php  echo $row['Timing'];?>" required="true"> </div> <div class="form-group"> <label for="exampleInputPassword1">Page Description</label> <textarea name="pagedes" id="pagedes" rows="5" class="form-control">
+        <?php  echo $row['PageDescription'];?></textarea> </div>
+							 <?php } ?>
+							  <button type="submit" name="submit" class="btn btn-default">Update</button> </form> 
 						</div>
-						<?php } ?>
+						
 					</div>
 				
 				

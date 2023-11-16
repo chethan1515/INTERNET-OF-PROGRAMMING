@@ -2,28 +2,32 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
+if (strlen($_SESSION['bpmsaid']==0)) {
+  header('location:logout.php');
+  } else{
 
 if(isset($_POST['submit']))
   {
-    $contactno=$_POST['contactno'];
-    $email=$_POST['email'];
-
-        $query=mysqli_query($con,"select ID from tbladmin where  Email='$email' and MobileNumber='$contactno' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
-      $_SESSION['contactno']=$contactno;
-      $_SESSION['email']=$email;
-     header('location:reset-password.php');
-    }
-    else{
-      $msg="Invalid Details. Please try again.";
-    }
+  	$bpmsaid=$_SESSION['bpmsaid'];
+     $pagetitle=$_POST['pagetitle'];
+$pagedes=$_POST['pagedes'];
+     
+    $query=mysqli_query($con,"update tblpage set PageTitle='$pagetitle',PageDescription='$pagedes' where  PageType='aboutus'");
+    if ($query) {
+    $msg="About Us has been updated.";
   }
+  else
+    {
+      $msg="Something Went Wrong. Please try again";
+    }
+
+  
+}
   ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BPMS | Forgot Page </title>
+<title>BPMS | About Us</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -51,43 +55,52 @@ if(isset($_POST['submit']))
 <script src="js/metisMenu.min.js"></script>
 <script src="js/custom.js"></script>
 <link href="css/custom.css" rel="stylesheet">
-<!--//Metis Menu -->
+<script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
+<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
 </head> 
 <body class="cbp-spmenu-push">
 	<div class="main-content">
-		
+		<!--left-fixed -navigation-->
+		 <?php include_once('includes/sidebar.php');?>
+		<!--left-fixed -navigation-->
+		<!-- header-starts -->
+	 <?php include_once('includes/header.php');?>
+		<!-- //header-ends -->
 		<!-- main content start-->
-		<div style="background-color: #F1F1F1; height:800px;">			<div class="main-page login-page ">
-				<h3 class="title1">Forgot Page</h3>
-				<div class="widget-shadow">
-					<div class="login-top">
-						<h4>Welcome back to BPMS AdminPanel ! </h4>
-					</div>
-					<div class="login-body">
-						<form role="form" method="post" action="">
-							<p style="font-size:16px; color:red" align="center"> <?php if($msg){
+		<div id="page-wrapper">
+			<div class="main-page">
+				<div class="forms">
+					<h3 class="title1">Update About Us</h3>
+					<div class="form-grids row widget-shadow" data-example-id="basic-forms"> 
+						<div class="form-title">
+							<h4>Update About Us:</h4>
+						</div>
+						<div class="form-body">
+							<form method="post">
+								<p style="font-size:16px; color:red" align="center"> <?php if($msg){
     echo $msg;
   }  ?> </p>
-							<input type="text" name="email" class="lock" placeholder="Email" required="true">
-							
-							<input type="text" name="contactno" class="lock" placeholder="Mobile Number" required="true" maxlength="10" pattern="[0-9]+">
-							
-							<input type="submit" name="submit" value="Reset">
-							<div class="forgot-grid">
-								
-								<div class="forgot">
-									<a href="index.php">Already have an account</a>
-								</div>
-								<div class="clearfix"> </div>
-							</div>
-						</form>
+  <?php
+ 
+$ret=mysqli_query($con,"select * from  tblpage where PageType='aboutus'");
+$cnt=1;
+while ($row=mysqli_fetch_array($ret)) {
+
+?>
+
+  
+							 <div class="form-group"> <label for="exampleInputEmail1">Page Title</label> <input type="text" class="form-control" name="pagetitle" id="pagetitle" value="<?php  echo $row['PageTitle'];?>" required="true"> </div> <div class="form-group"> <label for="exampleInputPassword1">Page Description</label> <textarea name="pagedes" id="pagedes" rows="5" class="form-control">
+        <?php  echo $row['PageDescription'];?></textarea> </div>
+							 <?php } ?>
+							  <button type="submit" name="submit" class="btn btn-default">Update</button> </form> 
+						</div>
+						
 					</div>
-				</div>
 				
 				
 			</div>
 		</div>
-		
+		 <?php include_once('includes/footer.php');?>
 	</div>
 	<!-- Classie -->
 		<script src="js/classie.js"></script>
@@ -117,3 +130,4 @@ if(isset($_POST['submit']))
    <script src="js/bootstrap.js"> </script>
 </body>
 </html>
+<?php } ?>
